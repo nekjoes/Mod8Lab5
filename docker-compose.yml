@@ -1,0 +1,36 @@
+version: "3"
+services:
+  nexus:
+    image: sonatype/nexus3
+    volumes:
+      - "nexus-data:/nexus-data"
+    ports:
+      - "6000:6000"
+      - "7000:7000"
+    deploy:
+        resources:
+          limits:
+            cpus: .5
+            memory: 2048M
+  jenkins:
+    container_name: jenkins_managed_by_compose
+    image: jenkins/jenkins:alpine
+    ports:
+      - "3001:3001"
+      - "5005:5005"
+    environment:
+    - JENKINS_OPTS=${JENKINS_OPTS:-"--httpPort=5005"}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: always
+    networks:
+      - net_jenkins
+  jenkins_slave:
+    build: .
+    volumes:
+      - "./jenkins_slave:/usr/src/app"
+    
+volumes:
+  jenkins_home:
+networks:
+  net_jenkins:
